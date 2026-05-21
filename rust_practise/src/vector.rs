@@ -15,6 +15,3 @@ pub fn use_vector() {
     println!("The vector is {:?}", numbers2);
 
 }
-
-
-// println!("The vector is {}")
