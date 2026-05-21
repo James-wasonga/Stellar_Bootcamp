@@ -1,0 +1,113 @@
+#![no_std]
+use soroban_sdk::{contract, contractimpl, contracttype,symbol_short, vec, Env, Symbol, String, Vec};
+
+#[contracttype]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Todo {
+    pub id: u32,
+    pub title: String,
+    pub description: String,
+    pub is_completed: bool,
+}
+
+#[contract]
+pub struct TodoList;
+
+const TODOS: Symbol = symbol_short!("TODOS");      
+const NEXT_ID: Symbol = symbol_short!("NEXT_ID");  
+
+
+#[contractimpl]
+impl TodoList {
+    pub fn create_todo(env: &Env, title: String, description: String) -> Todo {
+        let mut current_id = env.storage().instance().get(&NEXT_ID).unwrap_or(1);
+
+        let mut todos = env.storage().temporary().get(&TODOS).unwrap_or(Vec::new(env));
+
+        let new_todo = Todo {
+            id: current_id,
+            title,
+            description,
+            is_completed: false,
+        };
+        
+        // env.storage().temporary().set(&TODOS, &new_todo);
+        // todos.push_back(new_todo.clone());
+        // current_id +=1;
+
+        // env.storage().temporary().set(&NEXT_ID, &current_id);
+
+        // new_todo
+
+        todos.push_back(new_todo.clone());
+
+        env.storage().temporary().set(&TODOS, &todos);
+
+        current_id += 1;
+
+        env.storage().temporary().set(&NEXT_ID, &current_id);
+
+        new_todo
+    }
+
+    pub fn update_todo(env: &Env, id: u32, new_title: String, new_description: String) -> bool {
+        let mut todos = Self::get_todos(env);
+
+        for i in 0..todos.len() {
+            if let Some(mut todo) = todos.get(i) {
+                if todo.id == id {
+                    todo.title = new_title;
+                    todo.description = new_description;
+                    todo.is_completed = false;
+                    todos.set(i, todo);
+                    env.storage().instance().set(&TODOS, &todos);
+                    return true;
+                }   
+            }
+
+        }
+        false
+    }
+
+    pub fn get_todos(env: &Env) -> Vec<Todo> {
+        env.storage().temporary().get(&TODOS).unwrap_or(Vec::new(env))
+    }
+
+    pub fn get_next_id(env: &Env) -> u32 {
+        env.storage().temporary().get(&NEXT_ID).unwrap_or(1)
+    }
+
+    fn mark_completed(env: &Env, id: u32) -> bool {
+        let mut todos = Self::get_todos(env);   
+
+        for i in 0..todos.len() {
+            if let Some(mut todo) = todos.get(i) {
+                if todo.id == id {
+                    todo.is_completed = true;
+                    todos.set(i, todo);
+                    env.storage().instance().set(&TODOS, &todos);
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    pub fn delete_todo(env: &Env, id: u32) -> bool {
+        let mut todos = Self::get_todos(env);
+
+        for i in 0..todos.len() {
+            if let Some(todo) = todos.get(i) {
+                if todo.id == id {
+                    todos.remove(i);
+                    env.storage().instance().set(&TODOS, &todos);
+                    return true;
+                }
+            }
+        }
+        false
+    }
+ 
+}
+
+
