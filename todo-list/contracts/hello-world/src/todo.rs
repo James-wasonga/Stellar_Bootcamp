@@ -77,7 +77,7 @@ impl TodoList {
         env.storage().temporary().get(&NEXT_ID).unwrap_or(1)
     }
 
-    fn mark_completed(env: &Env, id: u32) -> bool {
+    pub fn mark_completed(env: &Env, id: u32) -> bool {
         let mut todos = Self::get_todos(env);   
 
         for i in 0..todos.len() {
