@@ -31,13 +31,6 @@ impl TodoList {
             is_completed: false,
         };
         
-        // env.storage().temporary().set(&TODOS, &new_todo);
-        // todos.push_back(new_todo.clone());
-        // current_id +=1;
-
-        // env.storage().temporary().set(&NEXT_ID, &current_id);
-
-        // new_todo
 
         todos.push_back(new_todo.clone());
 
